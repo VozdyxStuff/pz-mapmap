@@ -76,7 +76,7 @@ namespace MapMapLib
 		{
 			NewFormat = false;
 			int nCount = binReader.ReadInt32();
-			if (nCount == 1263557200) // NEW HEADER
+			if (nCount == 1263557200)
 			{
 				binReader.ReadInt32();
 				nCount = binReader.ReadInt32();
@@ -114,7 +114,7 @@ namespace MapMapLib
 				binReader.ReadInt32();
 				numEntries = binReader.ReadInt32();
 				NewFormat = true;
-				//Console.WriteLine("New Format");
+
 			}
 
 			/* bool mask = */
@@ -132,9 +132,8 @@ namespace MapMapLib
 				int h = binReader.ReadInt32();
 				TempSubTextureInfo.Add(new MMTextureData(a, b, c, d, e, f, g, h, entryName));
 			}
-			if (NewFormat == false)
+			if (!NewFormat)
 			{
-				//Console.WriteLine("Old Format reading");
 				long posPNGstart = binReader.BaseStream.Position;
 				binReader.BaseStream.Seek(8, SeekOrigin.Current); //skip header
 																  //start reading PNG chunks
@@ -195,7 +194,7 @@ namespace MapMapLib
 					id = binReader.ReadInt32();
 				} while (id != -559038737);
 			}
-			else if (NewFormat == true)
+			else if (NewFormat)
 			{
 				//New Format reading
 				int PNGSize = binReader.ReadInt32();
