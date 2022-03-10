@@ -14,6 +14,7 @@ namespace MapMapLib
 {
 	public class MMTextures
 	{
+		public bool NewFormat = false;
 		public Dictionary<string, MMTextureData> Textures;
 		public Dictionary<string, Dictionary<string, MMTextureData>> Sheets;
 		public System.Drawing.Imaging.PixelFormat format;
