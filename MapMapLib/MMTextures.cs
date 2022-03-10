@@ -73,7 +73,15 @@ namespace MapMapLib
 		}/*}}}*/
 		private void readPackFile(BinaryReader binReader)/*{{{*/
 		{
+			NewFormat = false;
 			int nCount = binReader.ReadInt32();
+			if (nCount == 1263557200) // NEW HEADER
+			{
+				binReader.ReadInt32();
+				nCount = binReader.ReadInt32();
+				NewFormat = true;
+			}
+				
 			Console.WriteLine("Sheet count: {0}", nCount);
 
 			for (int nn = 0; nn < nCount; nn++)
@@ -100,7 +108,16 @@ namespace MapMapLib
 			List<MMTextureData> TempSubTextureInfo = new List<MMTextureData>();
 			readString(binReader);
 			int numEntries = binReader.ReadInt32();
-			/* bool mask = */ binReader.ReadInt32()/* != 0*/;
+			if (numEntries == 1263557200)
+			{
+				binReader.ReadInt32();
+				numEntries = binReader.ReadInt32();
+				NewFormat = true;
+				//Console.WriteLine("New Format");
+			}
+
+			/* bool mask = */
+			binReader.ReadInt32()/* != 0*/;
 			for (int n = 0; n < numEntries; n++)
 			{
 				String entryName = readString(binReader);
@@ -114,65 +131,104 @@ namespace MapMapLib
 				int h = binReader.ReadInt32();
 				TempSubTextureInfo.Add(new MMTextureData(a, b, c, d, e, f, g, h, entryName));
 			}
-			long posPNGstart = binReader.BaseStream.Position;
-			binReader.BaseStream.Seek(8, SeekOrigin.Current); //skip header
-			//start reading PNG chunks
-			int datalen = 0;
-			string chunkid = "";
-			do
+			if (NewFormat == false)
 			{
-				datalen = this.readInt(binReader.ReadBytes(4));
-				this.strBuilder.Clear();
-				for (int n = 0; n < 4; n++)
+				//Console.WriteLine("Old Format reading");
+				long posPNGstart = binReader.BaseStream.Position;
+				binReader.BaseStream.Seek(8, SeekOrigin.Current); //skip header
+																  //start reading PNG chunks
+				int datalen = 0;
+				string chunkid = "";
+				do
 				{
-					this.strBuilder.Append(binReader.ReadChar());
-				}
-				chunkid = strBuilder.ToString();
-				if (chunkid != "IEND") // <- reminder this is advised against
-				{
-					binReader.BaseStream.Seek(datalen, SeekOrigin.Current);
-					binReader.BaseStream.Seek(4, SeekOrigin.Current);
-				}
-				else
-				{
-					binReader.BaseStream.Seek(4, SeekOrigin.Current);
-				}
-			} while (chunkid != "IEND");
-			long posPNGend = binReader.BaseStream.Position;
+					datalen = this.readInt(binReader.ReadBytes(4));
+					this.strBuilder.Clear();
+					for (int n = 0; n < 4; n++)
+					{
+						this.strBuilder.Append(binReader.ReadChar());
+					}
+					chunkid = strBuilder.ToString();
+					if (chunkid != "IEND") // <- reminder this is advised against
+					{
+						binReader.BaseStream.Seek(datalen, SeekOrigin.Current);
+						binReader.BaseStream.Seek(4, SeekOrigin.Current);
+					}
+					else
+					{
+						binReader.BaseStream.Seek(4, SeekOrigin.Current);
+					}
+				} while (chunkid != "IEND");
+				long posPNGend = binReader.BaseStream.Position;
 
-			binReader.BaseStream.Seek(posPNGstart, SeekOrigin.Begin);
-			byte[] data = binReader.ReadBytes(Convert.ToInt32(posPNGend - posPNGstart));
+				binReader.BaseStream.Seek(posPNGstart, SeekOrigin.Begin);
+				byte[] data = binReader.ReadBytes(Convert.ToInt32(posPNGend - posPNGstart));
 
-			Image img = Image.FromStream(new MemoryStream(data));
-			Bitmap bm = new Bitmap(img);
-			//bm.Save(OutputDir + "test" + Convert.ToString(sn) + ".png", System.Drawing.Imaging.ImageFormat.Png);
-			//if (this.format != bm.PixelFormat)
-			//{
+				Image img = Image.FromStream(new MemoryStream(data));
+				Bitmap bm = new Bitmap(img);
+				//bm.Save(OutputDir + "test" + Convert.ToString(sn) + ".png", System.Drawing.Imaging.ImageFormat.Png);
+				//if (this.format != bm.PixelFormat)
+				//{
 				this.format = bm.PixelFormat;
-			//}
+				//}
 
-			foreach (MMTextureData tex in TempSubTextureInfo)
-			{
-				tex.SetData(bm);
-				//add to regular text table
-				if (!this.Textures.ContainsKey(tex.name))
-					this.Textures.Add(tex.name, tex);
-				//add to sheet
-				string[] nameparts = tex.name.Split(new Char[] { '_' });
-				if (nameparts.Count() == 1)
-					nameparts = new string[2] { nameparts[0], "1" }; // small fix for some odd sheets
-				string sheetname = nameparts[0] + "_" + nameparts[1];
-				if (!this.Sheets.ContainsKey(sheetname))
-					this.Sheets.Add(sheetname, new Dictionary<string, MMTextureData>());
-				if (!this.Sheets[sheetname].ContainsKey(tex.name))
-					this.Sheets[sheetname].Add(tex.name, tex);
+				foreach (MMTextureData tex in TempSubTextureInfo)
+				{
+					tex.SetData(bm);
+					//add to regular text table
+					if (!this.Textures.ContainsKey(tex.name))
+						this.Textures.Add(tex.name, tex);
+					//add to sheet
+					string[] nameparts = tex.name.Split(new Char[] { '_' });
+					if (nameparts.Count() == 1)
+						nameparts = new string[2] { nameparts[0], "1" }; // small fix for some odd sheets
+					string sheetname = nameparts[0] + "_" + nameparts[1];
+					if (!this.Sheets.ContainsKey(sheetname))
+						this.Sheets.Add(sheetname, new Dictionary<string, MMTextureData>());
+					if (!this.Sheets[sheetname].ContainsKey(tex.name))
+						this.Sheets[sheetname].Add(tex.name, tex);
+				}
+
+				int id = 0;
+				do
+				{
+					id = binReader.ReadInt32();
+				} while (id != -559038737);
 			}
-
-			int id = 0;
-			do
+			else if (NewFormat == true)
 			{
-				id = binReader.ReadInt32();
-			} while (id != -559038737);
+				//New Format reading
+				int PNGSize = binReader.ReadInt32();
+				long posPNGstart = binReader.BaseStream.Position;
+				long posPNGend = posPNGstart + PNGSize;
+
+				binReader.ReadInt32();
+
+					binReader.BaseStream.Seek(posPNGstart, SeekOrigin.Begin);
+					byte[] data = binReader.ReadBytes(Convert.ToInt32(posPNGend - posPNGstart));
+
+				Image img = Image.FromStream(new MemoryStream(data));
+				Bitmap bm = new Bitmap(img);
+
+				this.format = bm.PixelFormat;
+
+				foreach (MMTextureData tex in TempSubTextureInfo)
+				{
+					tex.SetData(bm);
+					//add to regular text table
+					if (!this.Textures.ContainsKey(tex.name))
+						this.Textures.Add(tex.name, tex);
+					//add to sheet
+					string[] nameparts = tex.name.Split(new Char[] { '_' });
+					if (nameparts.Count() == 1)
+						nameparts = new string[2] { nameparts[0], "1" }; // small fix for some odd sheets
+					string sheetname = nameparts[0] + "_" + nameparts[1];
+					if (!this.Sheets.ContainsKey(sheetname))
+						this.Sheets.Add(sheetname, new Dictionary<string, MMTextureData>());
+					if (!this.Sheets[sheetname].ContainsKey(tex.name))
+						this.Sheets[sheetname].Add(tex.name, tex);
+				}
+
+			}
 		}/*}}}*/
 	}
 }
