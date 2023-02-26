@@ -39,6 +39,7 @@ jobs:
     - name: Unpack map.tar.gz
       run: |
         7z x map.tar.gz
+        7z x -aoa -ttar map.tar 
         dir
         Move-Item -Path ".\MapMap.exe" -Destination ".\map\" -PassThru
     - name: Try run MapMap.exe
