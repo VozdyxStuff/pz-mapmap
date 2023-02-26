@@ -45,4 +45,4 @@ jobs:
     - name: Try run MapMap.exe
       run: |
         cd -Path .\map\
-        .\mapmap.bat
+        cmd.exe -/c ".\mapmap.bat"
