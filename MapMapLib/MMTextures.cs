@@ -102,6 +102,7 @@ namespace MapMapLib
 		}/*}}}*/
 		private int readInt(byte[] buffer)/*{{{*/
 		{
+                        Console.WriteLine("Length of Array: {0,3}", buffer.Length);
 			return buffer[0] << 24 | (buffer[1] & 0xFF) << 16 | (buffer[2] & 0xFF) << 8 | buffer[3] & 0xFF;
 		}/*}}}*/
 		private void loadFromPackFile(BinaryReader binReader, int sn)/*{{{*/
