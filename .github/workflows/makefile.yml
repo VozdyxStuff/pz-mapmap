@@ -27,3 +27,20 @@ jobs:
       with:
         name: MapMap.exe
         path: MapMap.exe
+  try:
+    runs-on: windows-2019
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Download files
+      run: |
+        Invoke-WebRequest -URI "https://dl.fairgame.pro/map.tar.gz" -OutFile ".\map.tar.gz"
+        #Invoke-WebRequest -URI "https://dl.fairgame.pro/MapMap.exe" -OutFile ".\MapMap.exe"
+    - name: Unpack map.tar.gz
+      run: |
+        7z x -tgz
+        Move-Item -Path ".\MapMap.exe" -Destination ".\map\" -PassThru
+    - name: Try run MapMap.exe
+      run: |
+        cd -Path .\map\
+        mapmap.bat
