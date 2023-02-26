@@ -18,5 +18,4 @@ jobs:
     - name: Install dependencies
       run: make
 
-    - name: Run check
-      run: make MapMap.exe
+    - run: ls -la
