@@ -233,7 +233,7 @@ namespace MapMap
 							break;
 					}
 				}
-				Console.Clear();
+				//Console.Clear();
 				Console.WriteLine("Boundaries: minx {0} maxx {1} miny {2} maxy {3}", this.minX, this.maxX, this.minY, this.maxY);
 				Console.WriteLine("Threads: {0}", this.maxThreads);
 				Console.WriteLine("Starting programm...");
