@@ -18,4 +18,8 @@ jobs:
     - name: Install dependencies
       run: make
 
-    - run: ls -la
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: MapMap.exe
+        path: MapMap.exe
