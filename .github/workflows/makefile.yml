@@ -38,7 +38,8 @@ jobs:
         #Invoke-WebRequest -URI "https://dl.fairgame.pro/MapMap.exe" -OutFile ".\MapMap.exe"
     - name: Unpack map.tar.gz
       run: |
-        7z x -tgz map.tar.gz
+        7z x map.tar.gz
+        dir
         Move-Item -Path ".\MapMap.exe" -Destination ".\map\" -PassThru
     - name: Try run MapMap.exe
       run: |
