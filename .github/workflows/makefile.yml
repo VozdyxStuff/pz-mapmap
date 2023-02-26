@@ -34,15 +34,15 @@ jobs:
     - uses: actions/checkout@v3
     - name: Download files
       run: |
-        Invoke-WebRequest -URI "https://dl.fairgame.pro/map.tar.gz" -OutFile ".\map.tar.gz"
-        #Invoke-WebRequest -URI "https://dl.fairgame.pro/MapMap.exe" -OutFile ".\MapMap.exe"
+        Invoke-WebRequest -URI "https://dl.fairgame.pro/map.tar.gz" -OutFile ".\map.tar.gz" -PassThru
+        #Invoke-WebRequest -URI "https://dl.fairgame.pro/MapMap.exe" -OutFile ".\MapMap.exe" -PassThru
     - name: Unpack map.tar.gz
       run: |
         7z x map.tar.gz
-        7z x -aoa -ttar map.tar 
-        dir
+        7z x -aoa -ttar map.tar
         Move-Item -Path ".\MapMap.exe" -Destination ".\map\" -PassThru
+        dir .\map\
     - name: Try run MapMap.exe
       run: |
         cd -Path .\map\
-        mapmap.bat
+        .\mapmap.bat
